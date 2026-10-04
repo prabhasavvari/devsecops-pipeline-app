@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-  # 1. PostgreSQL Database Service
-  db:
+  # 1. PostgreSQL Database Service (Renamed for uniqueness)
+  postgres_db:
     image: postgres:15-alpine
     container_name: postgres_db
     environment:
@@ -18,9 +18,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - devsecops-net
 
-  # 2. Redis Cache Service
-  redis:
+  # 2. Redis Cache Service (Renamed for uniqueness)
+  redis_cache:
     image: redis:7-alpine
     container_name: redis_cache
     ports:
@@ -30,8 +32,10 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - devsecops-net
 
-  # 3. Spring Boot Backend Service (Using your Dockerfile!)
+  # 3. Spring Boot Backend Service
   backend:
     build:
       context: ./backend
@@ -40,17 +44,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Notice how the URL points to 'db' instead of 'localhost'
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/appdb
+      # Now pointing to the hyper-specific network names
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/appdb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=secretpassword
-      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_HOST=redis_cache
       - SPRING_DATA_REDIS_PORT=6379
     depends_on:
-      db:
+      postgres_db:
         condition: service_healthy
-      redis:
+      redis_cache:
         condition: service_healthy
+    networks:
+      - devsecops-net
+
+# Explicitly create an isolated network bridge
+networks:
+  devsecops-net:
+    driver: bridge
 
 volumes:
   postgres_data:
