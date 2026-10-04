@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # 1. PostgreSQL Database Service (Hyphen instead of underscore)
   postgres-db:
     image: postgres:15-alpine
     container_name: postgres-db
@@ -9,8 +8,6 @@ services:
       POSTGRES_DB: appdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secretpassword
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,12 +18,9 @@ services:
     networks:
       - devsecops-net
 
-  # 2. Redis Cache Service (Hyphen instead of underscore)
   redis-cache:
     image: redis:7-alpine
     container_name: redis-cache
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -35,16 +29,14 @@ services:
     networks:
       - devsecops-net
 
-  # 3. Spring Boot Backend Service
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: spring-backend
     ports:
-      - "8080:8080"
+      - "8080:8080" # We ONLY expose the backend to Codespaces
     environment:
-      # URLs updated to use the hyphenated names
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/appdb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=secretpassword
