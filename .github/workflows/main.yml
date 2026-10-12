@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          file: Dockerfile
+          file: backend/Dockerfile
           load: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/devsecops-backend:latest
 
@@ -76,7 +76,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          file: Dockerfile
+          file: backend/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/devsecops-backend:latest
